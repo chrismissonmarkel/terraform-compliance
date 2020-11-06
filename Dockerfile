@@ -1,9 +1,6 @@
 FROM python:3.7.3-slim
 
-ARG VERSION
-ARG LATEST_TERRAFORM_VERSION
-
-ARG HASHICORP_PGP_KEY
+ARG VERSION=1.3.6
 ARG TARGET_ARCH='linux_amd64'
 
 LABEL terraform_compliance.version="${VERSION}"
@@ -14,43 +11,44 @@ ENV TERRAFORM_VERSION=0.12.24
 ENV TARGET_ARCH="${TARGET_ARCH}"
 ENV HASHICORP_PGP_KEY="${HASHICORP_PGP_KEY}"
 
-RUN  set -ex \
-     && BUILD_DEPS='wget unzip gpg' \
-     && RUN_DEPS='git' \
-     && apt-get update \
-     && apt-get install -y ${BUILD_DEPS} ${RUN_DEPS} \
-     && TERRAFORM_FILE_NAME="terraform_${TERRAFORM_VERSION}_${TARGET_ARCH}.zip" \
-     && SHA256SUM_FILE_NAME="terraform_${TERRAFORM_VERSION}_SHA256SUMS" \
-     && SHA256SUM_SIG_FILE_NAME="terraform_${TERRAFORM_VERSION}_SHA256SUMS.sig" \
-     && SHA256SUM_FILE_NAME_FOR_ARCH="${SHA256SUM_FILE_NAME}.${TARGET_ARCH}" \
-     && HASHICORP_PGP_KEY_FILE='hashicorp-pgp-key.pub' \
-     && OLD_BASEDIR="$(pwd)" \
-     && TMP_DIR=$(mktemp -d) \
-     && cd "${TMP_DIR}" \
-     && echo "${HASHICORP_PGP_KEY}" > "${HASHICORP_PGP_KEY_FILE}" \
-     && wget -q "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/${SHA256SUM_FILE_NAME}" \
-     && wget -q "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/${SHA256SUM_SIG_FILE_NAME}" \
-     && gpg --import "${HASHICORP_PGP_KEY_FILE}" \
-     && gpg --verify "${SHA256SUM_SIG_FILE_NAME}" "${SHA256SUM_FILE_NAME}" \
-     && wget -q "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/${TERRAFORM_FILE_NAME}" \
-     && grep "${TERRAFORM_FILE_NAME}" "${SHA256SUM_FILE_NAME}" > "${SHA256SUM_FILE_NAME_FOR_ARCH}" \
-     && ls -al . \
-     && sha256sum -c "${SHA256SUM_FILE_NAME_FOR_ARCH}" \
-     && unzip "${TERRAFORM_FILE_NAME}" \
-     && install terraform /usr/bin/ \
-     && cd "${OLD_BASEDIR}" \
-     && unset OLD_BASEDIR \
-     && rm -vrf ${TMP_DIR} \
-     && pip install --upgrade pip \
-     && pip install terraform-compliance=="${VERSION}" \
-     && pip uninstall -y radish radish-bdd \
-     && pip install radish radish-bdd \
-     && pip install checkov \
-     && apt-get remove -y ${BUILD_DEPS} \
-     && apt-get autoremove -y \
-     && apt-get clean -y \
-     && rm -rf /var/lib/apt/lists/* \
-     && mkdir -p /target
+RUN  set -ex 
+     RUN BUILD_DEPS='wget unzip gpg' 
+     RUN RUN_DEPS='git' 
+     RUN apt-get update 
+     RUN apt-get install -y ${BUILD_DEPS} ${RUN_DEPS} 
+     RUN TERRAFORM_FILE_NAME="terraform_${TERRAFORM_VERSION}_${TARGET_ARCH}.zip" 
+     RUN SHA256SUM_FILE_NAME="terraform_${TERRAFORM_VERSION}_SHA256SUMS" 
+     RUN SHA256SUM_SIG_FILE_NAME="terraform_${TERRAFORM_VERSION}_SHA256SUMS.sig" 
+     RUN SHA256SUM_FILE_NAME_FOR_ARCH="${SHA256SUM_FILE_NAME}.${TARGET_ARCH}" 
+     RUN HASHICORP_PGP_KEY_FILE='hashicorp-pgp-key.pub' 
+     RUN OLD_BASEDIR="$(pwd)" 
+     RUN TMP_DIR=$(mktemp -d) 
+     RUN cd "${TMP_DIR}" 
+     COPY hashicorp-pgp-key.pub "${HASHICORP_PGP_KEY_FILE}"
+     RUN echo "${HASHICORP_PGP_KEY}" > "${HASHICORP_PGP_KEY_FILE}" 
+     RUN wget -q "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/${SHA256SUM_FILE_NAME}" 
+     RUN wget -q "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/${SHA256SUM_SIG_FILE_NAME}" 
+     RUN gpg --import "${HASHICORP_PGP_KEY_FILE}" 
+     RUN gpg --verify "${SHA256SUM_SIG_FILE_NAME}" "${SHA256SUM_FILE_NAME}" 
+     RUN wget -q "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/${TERRAFORM_FILE_NAME}" 
+     RUN grep "${TERRAFORM_FILE_NAME}" "${SHA256SUM_FILE_NAME}" > "${SHA256SUM_FILE_NAME_FOR_ARCH}" 
+     RUN ls -al . 
+     RUN sha256sum -c "${SHA256SUM_FILE_NAME_FOR_ARCH}" 
+     RUN unzip "${TERRAFORM_FILE_NAME}" 
+     RUN install terraform /usr/bin/ 
+     RUN cd "${OLD_BASEDIR}" 
+     RUN unset OLD_BASEDIR 
+     RUN rm -vrf ${TMP_DIR} 
+     RUN pip install --upgrade pip 
+     RUN pip install terraform-compliance=="${VERSION}" 
+     RUN pip uninstall -y radish radish-bdd 
+     RUN pip install radish radish-bdd 
+     RUN pip install checkov 
+     RUN apt-get remove -y ${BUILD_DEPS} 
+     RUN apt-get autoremove -y 
+     RUN apt-get clean -y 
+     RUN rm -rf /var/lib/apt/lists/* 
+     RUN mkdir -p /target
 
 WORKDIR /target
 ENTRYPOINT ["terraform-compliance"]
