@@ -10,7 +10,7 @@ LABEL terraform_compliance.version="${VERSION}"
 LABEL author="Emre Erkunt <emre.erkunt@gmail.com>"
 LABEL source="https://github.com/eerkunt/terraform-compliance"
 
-ENV TERRAFORM_VERSION=${LATEST_TERRAFORM_VERSION}
+ENV TERRAFORM_VERSION=0.12.24
 ENV TARGET_ARCH="${TARGET_ARCH}"
 ENV HASHICORP_PGP_KEY="${HASHICORP_PGP_KEY}"
 
@@ -45,6 +45,7 @@ RUN  set -ex \
      && pip install terraform-compliance=="${VERSION}" \
      && pip uninstall -y radish radish-bdd \
      && pip install radish radish-bdd \
+     && pip install checkov \
      && apt-get remove -y ${BUILD_DEPS} \
      && apt-get autoremove -y \
      && apt-get clean -y \
