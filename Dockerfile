@@ -22,6 +22,7 @@ RUN unzip -j terraform_${TERRAFORM_VERSION}_linux_amd64.zip
 RUN install terraform /usr/bin/ 
 RUN pip install --upgrade pip 
 RUN pip install terraform-compliance=="${TERRAFORM_COMPLIANCE_VERSION}" 
+RUN pip uninstall -y radish radish-bdd 
 RUN pip install radish radish-bdd 
 RUN pip install checkov 
 RUN apt-get autoremove -y 
