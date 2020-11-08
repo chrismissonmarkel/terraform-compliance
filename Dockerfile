@@ -11,13 +11,7 @@ ENV TARGET_ARCH='linux_amd64'
 
 RUN set -ex 
 RUN apt-get update 
-RUN apt-get install -y apt-transport-https
-RUN apt-get install -y build-essential
 RUN apt-get install -y curl
-RUN apt-get install -y ca-certificates
-RUN apt-get install -y lsb-release
-RUN apt-get install -y rlwrap
-RUN apt-get install -y jq
 RUN apt-get install -y git
 RUN apt-get install -y unzip 
 RUN apt-get install -y gpg
@@ -38,14 +32,11 @@ RUN pip --no-cache-dir install radish radish-bdd
 RUN pip --no-cache-dir install checkov 
 RUN pip --no-cache-dir install azure-cli==$AZURE_CLI_VERSION
 
-RUN wget https://github.com/terraform-linters/tflint/releases/download/${TFLINT_VER}/tflint_linux_amd64.zip -P /tmp \
-    && unzip /tmp/tflint_linux_amd64.zip -d /usr/local/bin/ \
-    && rm /tmp/tflint_linux_amd64.zip
-
-RUN wget https://github.com/terraform-linters/tflint-ruleset-azurerm/releases/download/${AZRUERM_PLUGIN_VER}/tflint-ruleset-azurerm_linux_amd64.zip -P /tmp \
-    && mkdir -p /root/.tflint.d/plugins/ \
-    && unzip /tmp/tflint-ruleset-azurerm_linux_amd64.zip -d /root/.tflint.d/plugins/ \
-    && rm /tmp/tflint-ruleset-azurerm_linux_amd64.zip
+RUN curl -Os https://github.com/terraform-linters/tflint/releases/download/${TFLINT_VER}/tflint_linux_amd64.zip
+RUN unzip tflint_linux_amd64.zip -d /usr/local/bin/
+RUN curl -Os https://github.com/terraform-linters/tflint-ruleset-azurerm/releases/download/${AZRUERM_PLUGIN_VER}/tflint-ruleset-azurerm_linux_amd64.zip
+RUN mkdir -p /root/.tflint.d/plugins/
+RUN unzip /tmp/tflint-ruleset-azurerm_linux_amd64.zip -d /root/.tflint.d/plugins/
 
 RUN apt-get autoremove -y 
 RUN apt-get clean -y 
