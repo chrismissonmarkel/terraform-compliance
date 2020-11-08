@@ -3,6 +3,9 @@ FROM python:3.7.3-slim
 ENV TERRAFORM_COMPLIANCE_VERSION=1.3.6
 ENV TERRAFORM_VERSION=0.12.24
 ARG AZURE_CLI_VERSION=2.14.1
+ENV TFLINT_VER=v0.20.3
+ENV AZRUERM_PLUGIN_VER=v0.5.1
+
 ENV CHECKOV_VERSION=
 ENV TARGET_ARCH='linux_amd64'
 
@@ -34,9 +37,6 @@ RUN pip --no-cache-dir uninstall -y radish radish-bdd
 RUN pip --no-cache-dir install radish radish-bdd 
 RUN pip --no-cache-dir install checkov 
 RUN pip --no-cache-dir install azure-cli==$AZURE_CLI_VERSION
-
-ENV TFLINT_VER=v0.20.3
-ENV AZRUERM_PLUGIN_VER=v0.5.1
 
 RUN wget https://github.com/terraform-linters/tflint/releases/download/${TFLINT_VER}/tflint_linux_amd64.zip -P /tmp \
     && unzip /tmp/tflint_linux_amd64.zip -d /usr/local/bin/ \
