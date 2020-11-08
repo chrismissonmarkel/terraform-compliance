@@ -11,7 +11,13 @@ ENV TARGET_ARCH='linux_amd64'
 
 RUN set -ex 
 RUN apt-get update 
+RUN apt-get install -y apt-transport-https
+RUN apt-get install -y build-essential
 RUN apt-get install -y curl
+RUN apt-get install -y ca-certificates
+RUN apt-get install -y lsb-release
+RUN apt-get install -y rlwrap
+RUN apt-get install -y jq
 RUN apt-get install -y git
 RUN apt-get install -y unzip 
 RUN apt-get install -y gpg
