@@ -21,6 +21,7 @@ RUN apt-get install -y jq
 RUN apt-get install -y git
 RUN apt-get install -y unzip 
 RUN apt-get install -y gpg
+RUN apt-get install -y wget
 
 COPY hashicorp-pgp-key.pub hashicorp-pgp-key.pub
 RUN curl -Os https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_SHA256SUMS
@@ -38,11 +39,16 @@ RUN pip --no-cache-dir install radish radish-bdd
 RUN pip --no-cache-dir install checkov 
 RUN pip --no-cache-dir install azure-cli==$AZURE_CLI_VERSION
 
-RUN curl -Os https://github.com/terraform-linters/tflint/releases/download/${TFLINT_VER}/tflint_linux_amd64.zip
-RUN unzip tflint_linux_amd64.zip -d /usr/local/bin/
-RUN curl -Os https://github.com/terraform-linters/tflint-ruleset-azurerm/releases/download/${AZRUERM_PLUGIN_VER}/tflint-ruleset-azurerm_linux_amd64.zip
-RUN mkdir -p /root/.tflint.d/plugins/
-RUN unzip /tmp/tflint-ruleset-azurerm_linux_amd64.zip -d /root/.tflint.d/plugins/
+RUN wget https://github.com/terraform-linters/tflint/releases/download/${TFLINT_VER}/tflint_linux_amd64.zip -P /tmp \
+    && unzip /tmp/tflint_linux_amd64.zip -d /usr/local/bin/ \
+    && rm /tmp/tflint_linux_amd64.zip
+
+RUN wget https://github.com/terraform-linters/tflint-ruleset-azurerm/releases/download/${AZRUERM_PLUGIN_VER}/tflint-ruleset-azurerm_linux_amd64.zip -P /tmp \
+    && mkdir -p /root/.tflint.d/plugins/ \
+    && unzip /tmp/tflint-ruleset-azurerm_linux_amd64.zip -d /root/.tflint.d/plugins/ \
+    && rm /tmp/tflint-ruleset-azurerm_linux_amd64.zip
+	
+RUN curl https://omnitruck.chef.io/install.sh | bash -s -- -P inspec
 
 RUN apt-get autoremove -y 
 RUN apt-get clean -y 
@@ -52,6 +58,7 @@ RUN checkov -v
 RUN terraform -v
 RUN az -v
 RUN tflint -v
+RUN inspec -v
 
 WORKDIR /workspace
 ENTRYPOINT ["terraform-compliance"]
