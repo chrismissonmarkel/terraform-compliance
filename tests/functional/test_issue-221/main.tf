@@ -1,3 +1,0 @@
-module "elasticSearch" {
-  source = "./module/"
-}
