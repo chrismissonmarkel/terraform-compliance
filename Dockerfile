@@ -1,11 +1,10 @@
 FROM python:3.7.3-slim
 
-ENV TERRAFORM_COMPLIANCE_VERSION=1.3.6
+ENV TERRAFORM_COMPLIANCE_VERSION=1.3.8
 ENV TERRAFORM_VERSION=0.13.5
 ARG AZURE_CLI_VERSION=2.14.1
 ENV TFLINT_VER=v0.20.3
 ENV AZRUERM_PLUGIN_VER=v0.5.1
-
 ENV CHECKOV_VERSION=
 ENV TARGET_ARCH='linux_amd64'
 
@@ -22,7 +21,25 @@ RUN apt-get install -y git
 RUN apt-get install -y unzip 
 RUN apt-get install -y gpg
 RUN apt-get install -y wget
+RUN apt-get install -y software-properties-common
 
+# Install powershell related system components
+RUN apt-get install -y \
+    gnupg \
+    && apt-get clean
+
+# Import the public repository GPG keys
+RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
+
+# Register the Microsoft's Debian repository
+RUN sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-debian-stretch-prod stretch main" > /etc/apt/sources.list.d/microsoft.list'
+
+# Install PowerShell
+RUN apt-get update \
+    && apt-get install -y \
+    powershell
+
+    
 COPY hashicorp-pgp-key.pub hashicorp-pgp-key.pub
 RUN curl -Os https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_SHA256SUMS
 RUN curl -Os https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
@@ -34,8 +51,6 @@ RUN unzip -j terraform_${TERRAFORM_VERSION}_linux_amd64.zip
 RUN install terraform /usr/bin/ 
 RUN pip --no-cache-dir install --upgrade pip 
 RUN pip --no-cache-dir install terraform-compliance=="${TERRAFORM_COMPLIANCE_VERSION}" 
-RUN pip --no-cache-dir uninstall -y radish radish-bdd 
-RUN pip --no-cache-dir install radish radish-bdd 
 RUN pip --no-cache-dir install checkov 
 RUN pip --no-cache-dir install azure-cli==$AZURE_CLI_VERSION
 
@@ -59,6 +74,7 @@ RUN terraform -v
 RUN az -v
 RUN tflint -v
 RUN inspec -v
+RUN pwsh -v
 
 WORKDIR /workspace
 ENTRYPOINT ["terraform-compliance"]
