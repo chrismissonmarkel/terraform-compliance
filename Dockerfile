@@ -39,6 +39,7 @@ RUN apt-get update \
     && apt-get install -y \
     powershell
 
+RUN pwsh -c "Install-Module Az -Force"
     
 COPY hashicorp-pgp-key.pub hashicorp-pgp-key.pub
 RUN curl -Os https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_SHA256SUMS
