@@ -22,25 +22,22 @@ RUN apt-get install -y unzip
 RUN apt-get install -y gpg
 RUN apt-get install -y wget
 RUN apt-get install -y software-properties-common
+RUN apt-get install -y less
+RUN apt-get install -y libssl1.1
+RUN apt-get install -y libc6
+RUN apt-get install -y libgcc1
+RUN apt-get install -y libgssapi-krb5-2
+RUN apt-get install -y liblttng-ust0
+RUN apt-get install -y libstdc++6
+RUN apt-get install -y zlib1g
 
-# Install powershell related system components
-RUN apt-get install -y \
-    gnupg \
-    && apt-get clean
 
-# Import the public repository GPG keys
-RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
+RUN curl -L  https://github.com/PowerShell/PowerShell/releases/download/v7.1.0/powershell-7.1.0-linux-x64.tar.gz -o /tmp/powershell.tar.gz \
+		&& mkdir -p /opt/microsoft/powershell/7 \
+		&& tar zxf /tmp/powershell.tar.gz -C /opt/microsoft/powershell/7 \
+		&& chmod +x /opt/microsoft/powershell/7/pwsh \
+		&& ln -s /opt/microsoft/powershell/7/pwsh /usr/bin/pwsh
 
-# Register the Microsoft's Debian repository
-RUN sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-debian-stretch-prod stretch main" > /etc/apt/sources.list.d/microsoft.list'
-
-# Install PowerShell
-RUN apt-get update \
-    && apt-get install -y \
-    powershell
-
-RUN pwsh -c "Install-Module Az -Force"
-    
 COPY hashicorp-pgp-key.pub hashicorp-pgp-key.pub
 RUN curl -Os https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_SHA256SUMS
 RUN curl -Os https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
@@ -76,6 +73,7 @@ RUN az -v
 RUN tflint -v
 RUN inspec -v
 RUN pwsh -v
+RUN pwsh -c "Install-Module Az -Force"
 
 WORKDIR /workspace
 ENTRYPOINT ["terraform-compliance"]
